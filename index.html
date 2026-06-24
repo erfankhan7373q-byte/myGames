@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بازی‌های من 🎮</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: #0d0d0d;
+    min-height: 100vh;
+    font-family: 'Vazirmatn', sans-serif;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+
+  .header h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .header p {
+    color: #555;
+    font-size: 1rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    max-width: 900px;
+    width: 100%;
+  }
+
+  .card {
+    background: #161616;
+    border: 1px solid #222;
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+    display: block;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    border-color: #444;
+  }
+
+  .card.snake:hover  { box-shadow: 0 12px 40px rgba(57,255,20,0.2);  border-color: #39ff14; }
+  .card.g2048:hover  { box-shadow: 0 12px 40px rgba(245,200,66,0.2); border-color: #f5c842; }
+  .card.breakout:hover { box-shadow: 0 12px 40px rgba(167,139,250,0.2); border-color: #a78bfa; }
+  .card.memory:hover { box-shadow: 0 12px 40px rgba(52,211,153,0.2); border-color: #34d399; }
+  .card.flappy:hover { box-shadow: 0 12px 40px rgba(251,191,36,0.2); border-color: #fbbf24; }
+
+  .emoji {
+    font-size: 3.5rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .card h2 {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+
+  .card.snake   h2 { color: #39ff14; }
+  .card.g2048   h2 { color: #f5c842; }
+  .card.breakout h2 { color: #a78bfa; }
+  .card.memory  h2 { color: #34d399; }
+  .card.flappy  h2 { color: #fbbf24; }
+
+  .card p {
+    font-size: 0.82rem;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  .badge {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 5px 14px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .card.snake   .badge { background: rgba(57,255,20,0.1);  color: #39ff14; }
+  .card.g2048   .badge { background: rgba(245,200,66,0.1); color: #f5c842; }
+  .card.breakout .badge { background: rgba(167,139,250,0.1); color: #a78bfa; }
+  .card.memory  .badge { background: rgba(52,211,153,0.1); color: #34d399; }
+  .card.flappy  .badge { background: rgba(251,191,36,0.1); color: #fbbf24; }
+
+  footer {
+    margin-top: 60px;
+    color: #333;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎮 بازی‌های من</h1>
+  <p>یه بازی انتخاب کن و شروع کن!</p>
+</div>
+
+<div class="grid">
+
+  <a class="card snake" href="snake.html">
+    <span class="emoji">🐍</span>
+    <h2>بازی مار</h2>
+    <p>مار رو هدایت کن، غذا بخور، به خودت نخوری!</p>
+    <span class="badge">کیبورد / لمس</span>
+  </a>
+
+  <a class="card g2048" href="2048.html">
+    <span class="emoji">🔢</span>
+    <h2>بازی ۲۰۴۸</h2>
+    <p>کاشی‌های یکسان رو ترکیب کن تا به ۲۰۴۸ برسی!</p>
+    <span class="badge">فکری</span>
+  </a>
+
+  <a class="card breakout" href="breakout.html">
+    <span class="emoji">🧱</span>
+    <h2>Breakout</h2>
+    <p>توپ رو با تخته بزن و همه آجرها رو بشکن!</p>
+    <span class="badge">موس / لمس</span>
+  </a>
+
+  <a class="card memory" href="memory.html">
+    <span class="emoji">🃏</span>
+    <h2>بازی حافظه</h2>
+    <p>کارت‌های یکسان رو با کمترین تلاش پیدا کن!</p>
+    <span class="badge">حافظه</span>
+  </a>
+
+  <a class="card flappy" href="flappy.html">
+    <span class="emoji">🐦</span>
+    <h2>Flappy Bird</h2>
+    <p>پرنده رو از بین لوله‌ها رد کن، نخور!</p>
+    <span class="badge">رفلکس</span>
+  </a>
+
+</div>
+
+<footer>ساخته شده با ❤️ — erfankhan7373q</footer>
+
+</body>
+</html>
