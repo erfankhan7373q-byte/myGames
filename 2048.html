@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بازی ۲۰۴۸ 🔢</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1108;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Vazirmatn', sans-serif;
+    color: #f0e6c8;
+    padding: 20px;
+    user-select: none;
+  }
+
+  h1 {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #f5c842;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    color: #7a6640;
+    margin-bottom: 20px;
+  }
+
+  .top-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+
+  .score-box {
+    background: #2c1f0a;
+    border: 1px solid #3d2c10;
+    border-radius: 10px;
+    padding: 8px 20px;
+    text-align: center;
+    min-width: 90px;
+  }
+
+  .score-label {
+    font-size: 0.65rem;
+    color: #7a6640;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .score-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #f5c842;
+  }
+
+  .new-btn {
+    background: #f5c842;
+    color: #1a1108;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Vazirmatn', sans-serif;
+    transition: transform 0.1s, background 0.15s;
+  }
+
+  .new-btn:hover { background: #ffd84d; transform: scale(1.04); }
+  .new-btn:active { transform: scale(0.97); }
+
+  .board-wrap {
+    background: #2c1f0a;
+    border-radius: 14px;
+    padding: 12px;
+    border: 1px solid #3d2c10;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  #board {
+    display: grid;
+    grid-template-columns: repeat(4, 90px);
+    grid-template-rows: repeat(4, 90px);
+    gap: 10px;
+  }
+
+  .cell {
+    width: 90px;
+    height: 90px;
+    border-radius: 8px;
+    background: #1a1108;
+    border: 1px solid #2a1a06;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.8rem;
+    transition: transform 0.08s;
+    position: relative;
+  }
+
+  .cell.pop {
+    animation: pop 0.15s ease;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+
+  /* Tile colors */
+  .t2    { background: #3d2c10; color: #f0e6c8; font-size: 1.9rem; }
+  .t4    { background: #52390e; color: #f0e6c8; font-size: 1.9rem; }
+  .t8    { background: #b85c00; color: #fff; font-size: 1.9rem; }
+  .t16   { background: #c96400; color: #fff; font-size: 1.8rem; }
+  .t32   { background: #d97000; color: #fff; font-size: 1.7rem; }
+  .t64   { background: #e07d00; color: #fff; font-size: 1.7rem; }
+  .t128  { background: #e8960a; color: #fff; font-size: 1.5rem; }
+  .t256  { background: #f0a800; color: #fff; font-size: 1.5rem; }
+  .t512  { background: #f5b800; color: #fff; font-size: 1.4rem; }
+  .t1024 { background: #f5c700; color: #fff; font-size: 1.1rem; }
+  .t2048 { background: #f5e000; color: #1a1108; font-size: 1rem; box-shadow: 0 0 20px rgba(245,224,0,0.5); }
+  .t4096 { background: #fff; color: #1a1108; font-size: 1rem; }
+
+  .hint {
+    margin-top: 14px;
+    font-size: 0.75rem;
+    color: #4a3620;
+    text-align: center;
+  }
+
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(6px);
+  }
+
+  #overlay h2 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #f5c842;
+    margin-bottom: 10px;
+  }
+
+  #overlay .msg {
+    color: #aaa;
+    margin-bottom: 20px;
+    font-size: 1rem;
+  }
+
+  #overlay .final-score {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 30px;
+  }
+
+  .play-btn {
+    background: #f5c842;
+    color: #1a1108;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Vazirmatn', sans-serif;
+    transition: transform 0.15s;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.4);
+  }
+
+  .play-btn:hover { transform: scale(1.05); }
+
+  /* Swipe support */
+  #board-touch { touch-action: none; }
+
+  @media (max-width: 420px) {
+    #board { grid-template-columns: repeat(4,70px); grid-template-rows: repeat(4,70px); }
+    .cell { width:70px; height:70px; font-size:1.3rem; }
+    .t128,.t256,.t512 { font-size: 1.1rem; }
+    .t1024,.t2048,.t4096 { font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🔢 بازی ۲۰۴۸</h1>
+<p class="subtitle">کاشی‌ها رو ترکیب کن تا به ۲۰۴۸ برسی!</p>
+
+<div class="top-bar">
+  <div class="score-box">
+    <div class="score-label">امتیاز</div>
+    <div class="score-value" id="scoreVal">0</div>
+  </div>
+  <div class="score-box">
+    <div class="score-label">بهترین</div>
+    <div class="score-value" id="bestVal">0</div>
+  </div>
+  <button class="new-btn" id="newGame">بازی جدید</button>
+</div>
+
+<div class="board-wrap">
+  <div id="board" id="board-touch"></div>
+</div>
+
+<p class="hint">کیبورد: کلیدهای جهت‌دار | موبایل: بکش</p>
+
+<div id="overlay">
+  <h2>🔢 بازی ۲۰۴۸</h2>
+  <p class="msg">کاشی‌های یکسان رو ترکیب کن تا به ۲۰۴۸ برسی!</p>
+  <button class="play-btn" id="startBtn">شروع بازی</button>
+</div>
+
+<script>
+const boardEl = document.getElementById('board');
+const scoreEl = document.getElementById('scoreVal');
+const bestEl  = document.getElementById('bestVal');
+const overlay = document.getElementById('overlay');
+
+let grid, score, best, won;
+best = 0;
+
+function newGrid() {
+  return Array.from({length:4}, () => Array(4).fill(0));
+}
+
+function addRandom(g) {
+  const empty = [];
+  for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(!g[r][c]) empty.push([r,c]);
+  if(!empty.length) return;
+  const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+  g[r][c] = Math.random() < 0.85 ? 2 : 4;
+}
+
+function startGame() {
+  overlay.style.display = 'none';
+  grid = newGrid();
+  score = 0;
+  won = false;
+  scoreEl.textContent = 0;
+  addRandom(grid);
+  addRandom(grid);
+  render();
+}
+
+function render() {
+  boardEl.innerHTML = '';
+  for(let r=0;r<4;r++) {
+    for(let c=0;c<4;c++) {
+      const val = grid[r][c];
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (val ? ' t'+val : '');
+      cell.textContent = val || '';
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function slideRow(row) {
+  let arr = row.filter(v=>v);
+  let gained = 0;
+  for(let i=0;i<arr.length-1;i++) {
+    if(arr[i]===arr[i+1]) {
+      arr[i] *= 2;
+      gained += arr[i];
+      arr.splice(i+1,1);
+      i++;
+    }
+  }
+  while(arr.length<4) arr.push(0);
+  return {row: arr, gained};
+}
+
+function moveLeft(g) {
+  let moved=false, gained=0;
+  for(let r=0;r<4;r++) {
+    const {row, gained:g2} = slideRow(g[r]);
+    if(row.join()!==g[r].join()) moved=true;
+    g[r]=row; gained+=g2;
+  }
+  return {moved, gained};
+}
+
+function rotateRight(g) {
+  return g[0].map((_, c) => g.map(r => r[c]).reverse());
+}
+
+function rotateLeft(g) {
+  return g[0].map((_, c) => g.map(r => r[c])).reverse();
+}
+
+function move(dir) {
+  let g = grid.map(r=>[...r]);
+  let moved, gained;
+
+  if(dir==='left')  { ({moved,gained} = moveLeft(g)); }
+  if(dir==='right') { g=g.map(r=>[...r].reverse()); ({moved,gained}=moveLeft(g)); g=g.map(r=>[...r].reverse()); }
+  if(dir==='up')    { g=rotateLeft(g); ({moved,gained}=moveLeft(g)); g=rotateRight(g); }
+  if(dir==='down')  { g=rotateRight(g); ({moved,gained}=moveLeft(g)); g=rotateLeft(g); }
+
+  if(!moved) return;
+
+  grid=g;
+  score+=gained;
+  scoreEl.textContent=score;
+  if(score>best){ best=score; bestEl.textContent=best; }
+
+  addRandom(grid);
+  render();
+
+  // pop animation on merged cells
+  setTimeout(()=>{
+    document.querySelectorAll('.cell').forEach(el=>{
+      if(el.textContent && parseInt(el.textContent)>4) {
+        el.classList.add('pop');
+        el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
+      }
+    });
+  },10);
+
+  // check win
+  if(!won && grid.flat().includes(2048)) {
+    won=true;
+    setTimeout(()=>showEnd(true),300);
+    return;
+  }
+
+  // check lose
+  if(!canMove(grid)) setTimeout(()=>showEnd(false),300);
+}
+
+function canMove(g) {
+  for(let r=0;r<4;r++) for(let c=0;c<4;c++) {
+    if(!g[r][c]) return true;
+    if(c<3 && g[r][c]===g[r][c+1]) return true;
+    if(r<3 && g[r][c]===g[r+1][c]) return true;
+  }
+  return false;
+}
+
+function showEnd(win) {
+  overlay.innerHTML = `
+    <h2>${win ? '🎉 بردی!' : '😞 باختی!'}</h2>
+    <p class="msg">${win ? 'عالی! به ۲۰۴۸ رسیدی!' : 'حرکت ممکنی نمونده!'}</p>
+    <div class="final-score">${score}</div>
+    <button class="play-btn" id="startBtn">دوباره بازی</button>
+  `;
+  overlay.style.display='flex';
+  document.getElementById('startBtn').addEventListener('click', startGame);
+}
+
+// Keyboard
+const keyMap = {
+  ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down',
+  a:'left', d:'right', w:'up', s:'down',
+  A:'left', D:'right', W:'up', S:'down'
+};
+document.addEventListener('keydown', e=>{
+  const dir=keyMap[e.key];
+  if(dir){ e.preventDefault(); move(dir); }
+});
+
+// Touch/swipe
+let tx=0, ty=0;
+boardEl.addEventListener('touchstart', e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; }, {passive:true});
+boardEl.addEventListener('touchend', e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)<20 && Math.abs(dy)<20) return;
+  if(Math.abs(dx)>Math.abs(dy)) move(dx>0?'right':'left');
+  else move(dy>0?'down':'up');
+});
+
+document.getElementById('newGame').addEventListener('click', ()=>{
+  overlay.innerHTML = `
+    <h2>🔢 بازی ۲۰۴۸</h2>
+    <p class="msg">مطمئنی می‌خوای از اول شروع کنی؟</p>
+    <button class="play-btn" id="startBtn" style="margin-bottom:12px">بله، از اول</button>
+    <br>
+    <button class="play-btn" id="cancelBtn" style="background:#333;color:#fff;box-shadow:none;">انصراف</button>
+  `;
+  overlay.style.display='flex';
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('cancelBtn').addEventListener('click', ()=>overlay.style.display='none');
+});
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+</script>
+</body>
+</html>

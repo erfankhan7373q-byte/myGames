@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بازی Breakout 🧱</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #080818;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh;
+    font-family: 'Vazirmatn', sans-serif;
+    color: #fff;
+    user-select: none;
+  }
+  h1 {
+    font-size: 2rem; font-weight: 900;
+    background: linear-gradient(135deg,#a78bfa,#60a5fa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .top-bar {
+    display:flex; gap:28px; margin-bottom:14px; align-items:center;
+  }
+  .sbox { text-align:center; }
+  .slabel { font-size:.65rem; color:#555; letter-spacing:1px; text-transform:uppercase; }
+  .sval { font-size:1.6rem; font-weight:900; color:#a78bfa; }
+  .sval.blue { color:#60a5fa; }
+  canvas {
+    border:2px solid #1a1a3a;
+    border-radius:12px;
+    background:#0a0a1a;
+    box-shadow: 0 0 50px rgba(167,139,250,0.15);
+    display:block;
+    cursor:none;
+  }
+  .hint { margin-top:12px; font-size:.75rem; color:#333; text-align:center; }
+  #overlay {
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.88);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    z-index:10; backdrop-filter:blur(5px);
+  }
+  #overlay h2 { font-size:2.4rem; font-weight:900; color:#a78bfa; margin-bottom:8px; }
+  #overlay p  { color:#888; margin-bottom:24px; font-size:.95rem; text-align:center; padding:0 20px; }
+  .final { font-size:3rem; font-weight:900; color:#fff; margin-bottom:28px; }
+  .pbtn {
+    background: linear-gradient(135deg,#a78bfa,#60a5fa);
+    color:#fff; border:none;
+    padding:13px 38px; border-radius:50px;
+    font-size:1.05rem; font-weight:700;
+    cursor:pointer; font-family:'Vazirmatn',sans-serif;
+    box-shadow:0 0 24px rgba(167,139,250,.4);
+    transition:transform .15s;
+  }
+  .pbtn:hover { transform:scale(1.05); }
+</style>
+</head>
+<body>
+<h1>🧱 Breakout</h1>
+<div class="top-bar">
+  <div class="sbox"><div class="slabel">امتیاز</div><div class="sval" id="sc">0</div></div>
+  <div class="sbox"><div class="slabel">بهترین</div><div class="sval blue" id="bs">0</div></div>
+  <div class="sbox"><div class="slabel">جان</div><div class="sval" id="lv" style="color:#f87171">❤️❤️❤️</div></div>
+</div>
+<canvas id="c" width="480" height="520"></canvas>
+<p class="hint">موس یا لمس برای حرکت تخته | موبایل: انگشتت رو بکش</p>
+
+<div id="overlay">
+  <h2>🧱 Breakout</h2>
+  <p>توپ رو با تخته بزن و همه آجرها رو بشکن!</p>
+  <button class="pbtn" id="sb">شروع بازی</button>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const ct = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const ov = document.getElementById('overlay');
+
+let paddle, ball, bricks, score, best, lives, raf, running;
+best = 0;
+
+const PAD_W=90, PAD_H=12, BALL_R=8;
+const ROWS=5, COLS=8, B_W=52, B_H=18, B_PAD=4;
+const COLORS=['#f87171','#fb923c','#fbbf24','#4ade80','#60a5fa','#a78bfa'];
+
+function initGame() {
+  paddle = { x: W/2-PAD_W/2, y: H-40 };
+  ball   = { x: W/2, y: H-70, vx:3.5, vy:-4 };
+  score  = 0; lives = 3;
+  document.getElementById('sc').textContent = 0;
+  updateLives();
+  bricks = [];
+  const offX = (W - COLS*(B_W+B_PAD) + B_PAD) / 2;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
+    bricks.push({
+      x: offX + c*(B_W+B_PAD),
+      y: 50 + r*(B_H+B_PAD),
+      alive: true,
+      color: COLORS[r % COLORS.length]
+    });
+  }
+}
+
+function updateLives() {
+  document.getElementById('lv').textContent = '❤️'.repeat(lives);
+}
+
+function draw() {
+  ct.clearRect(0,0,W,H);
+
+  // grid bg
+  ct.strokeStyle='#0f0f2a'; ct.lineWidth=1;
+  for(let x=0;x<W;x+=30){ ct.beginPath();ct.moveTo(x,0);ct.lineTo(x,H);ct.stroke(); }
+  for(let y=0;y<H;y+=30){ ct.beginPath();ct.moveTo(0,y);ct.lineTo(W,y);ct.stroke(); }
+
+  // bricks
+  bricks.forEach(b => {
+    if(!b.alive) return;
+    ct.shadowColor = b.color; ct.shadowBlur = 8;
+    const grad = ct.createLinearGradient(b.x,b.y,b.x,b.y+B_H);
+    grad.addColorStop(0, b.color);
+    grad.addColorStop(1, b.color+'88');
+    ct.fillStyle = grad;
+    ct.beginPath(); ct.roundRect(b.x,b.y,B_W,B_H,4); ct.fill();
+    ct.shadowBlur=0;
+  });
+
+  // paddle
+  const pg = ct.createLinearGradient(paddle.x,paddle.y,paddle.x+PAD_W,paddle.y);
+  pg.addColorStop(0,'#a78bfa'); pg.addColorStop(1,'#60a5fa');
+  ct.shadowColor='#a78bfa'; ct.shadowBlur=18;
+  ct.fillStyle=pg;
+  ct.beginPath(); ct.roundRect(paddle.x,paddle.y,PAD_W,PAD_H,PAD_H/2); ct.fill();
+  ct.shadowBlur=0;
+
+  // ball
+  ct.shadowColor='#fff'; ct.shadowBlur=16;
+  ct.fillStyle='#fff';
+  ct.beginPath(); ct.arc(ball.x,ball.y,BALL_R,0,Math.PI*2); ct.fill();
+  ct.shadowBlur=0;
+}
+
+function update() {
+  ball.x += ball.vx; ball.y += ball.vy;
+
+  // walls
+  if(ball.x-BALL_R<0||ball.x+BALL_R>W) ball.vx=-ball.vx;
+  if(ball.y-BALL_R<0) ball.vy=-ball.vy;
+
+  // paddle
+  if(ball.y+BALL_R>=paddle.y && ball.y+BALL_R<=paddle.y+PAD_H &&
+     ball.x>=paddle.x && ball.x<=paddle.x+PAD_W) {
+    ball.vy = -Math.abs(ball.vy);
+    const hit = (ball.x - (paddle.x+PAD_W/2)) / (PAD_W/2);
+    ball.vx = hit * 5;
+  }
+
+  // bricks
+  for(let b of bricks) {
+    if(!b.alive) continue;
+    if(ball.x+BALL_R>b.x && ball.x-BALL_R<b.x+B_W &&
+       ball.y+BALL_R>b.y && ball.y-BALL_R<b.y+B_H) {
+      b.alive=false;
+      ball.vy=-ball.vy;
+      score+=10;
+      document.getElementById('sc').textContent=score;
+      if(score>best){ best=score; document.getElementById('bs').textContent=best; }
+      spawnParticles(b.x+B_W/2, b.y+B_H/2, b.color);
+      break;
+    }
+  }
+
+  // ball lost
+  if(ball.y-BALL_R>H) {
+    lives--;
+    updateLives();
+    if(lives<=0) { endGame(false); return; }
+    ball = { x:W/2, y:H-70, vx:3.5*(Math.random()>.5?1:-1), vy:-4 };
+  }
+
+  // win
+  if(bricks.every(b=>!b.alive)) { endGame(true); return; }
+
+  drawParticles();
+  draw();
+  raf = requestAnimationFrame(update);
+}
+
+// Particles
+let particles=[];
+function spawnParticles(x,y,color) {
+  for(let i=0;i<12;i++) {
+    const a=Math.random()*Math.PI*2, s=2+Math.random()*3;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,color,life:1});
+  }
+}
+function drawParticles() {
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    ct.globalAlpha=p.life;
+    ct.fillStyle=p.color;
+    ct.beginPath();ct.arc(p.x,p.y,3,0,Math.PI*2);ct.fill();
+    p.x+=p.vx; p.y+=p.vy; p.life-=0.05;
+  });
+  ct.globalAlpha=1;
+}
+
+function endGame(win) {
+  cancelAnimationFrame(raf); running=false;
+  ov.innerHTML=`
+    <h2>${win?'🎉 بردی!':'💥 باختی!'}</h2>
+    <p>${win?'همه آجرها رو شکستی! آفرین!':'جان‌هات تموم شد!'}</p>
+    <div class="final">${score}</div>
+    <button class="pbtn" id="sb">دوباره بازی</button>
+  `;
+  ov.style.display='flex';
+  document.getElementById('sb').addEventListener('click',startGame);
+}
+
+function startGame() {
+  ov.style.display='none';
+  particles=[];
+  initGame(); running=true;
+  cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(update);
+}
+
+// Mouse
+cv.addEventListener('mousemove', e=>{
+  const r=cv.getBoundingClientRect();
+  paddle.x = e.clientX-r.left-PAD_W/2;
+  paddle.x = Math.max(0,Math.min(W-PAD_W,paddle.x));
+});
+// Touch
+cv.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  const r=cv.getBoundingClientRect();
+  paddle.x = e.touches[0].clientX-r.left-PAD_W/2;
+  paddle.x = Math.max(0,Math.min(W-PAD_W,paddle.x));
+},{passive:false});
+
+document.getElementById('sb').addEventListener('click',startGame);
+</script>
+</body>
+</html>
